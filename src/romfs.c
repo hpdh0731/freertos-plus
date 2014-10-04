@@ -19,6 +19,64 @@ static uint32_t get_unaligned(const uint8_t * d) {
     return ((uint32_t) d[0]) | ((uint32_t) (d[1] << 8)) | ((uint32_t) (d[2] << 16)) | ((uint32_t) (d[3] << 24));
 }
 
+
+void romfs_list(void * opaque, char * path, char * buf){
+	const uint8_t * meta = opaque;
+	int count = 0;
+	int dest = -1;
+	if(strlen(path) == 0 || (strlen(path) == 1 && path[0] == '/'))	{
+		dest = 1;
+		count = 0;
+	}
+
+		while( 1 )
+		{
+			if(get_unaligned(meta) == 0)
+			{
+				count++;
+				
+				
+				if(dest >= 0)
+				{
+					strcat(buf,"(");
+					strncat(buf,meta+12, get_unaligned(meta+8));
+					strcat(buf,")\t");
+				}
+				else
+				{
+					path++;
+					char *tmp = path;
+					while(path[0] != '\0' && path[0] != '/')	path++;
+					char name[32];
+					if(get_unaligned(meta+4) == hash_djb2(tmp,path-tmp))
+					{
+						dest = 1;
+						count = 0;
+					}
+				}
+				meta += 12+get_unaligned(meta+8);
+			}
+			else if(get_unaligned(meta) == 1)
+			{
+
+				if(!get_unaligned(meta+8)) break;
+				if(dest > 0 && count == 0){
+					strncat(buf,meta+16, get_unaligned(meta+12));
+					strcat(buf,"\t");
+				}
+				meta += get_unaligned(meta+12) + get_unaligned(meta+8) + 16;
+			}
+			else if(get_unaligned(meta) == 2){
+				meta += 4;
+				count--;
+				if(count < 0)	break;
+			}
+		}
+
+}
+
+
+
 static ssize_t romfs_read(void * opaque, void * buf, size_t count) {
     struct romfs_fds_t * f = (struct romfs_fds_t *) opaque;
     const uint8_t * size_p = f->file - 4;
@@ -101,5 +159,5 @@ static int romfs_open(void * opaque, const char * path, int flags, int mode) {
 
 void register_romfs(const char * mountpoint, const uint8_t * romfs) {
 //    DBGOUT("Registering romfs `%s' @ %p\r\n", mountpoint, romfs);
-    register_fs(mountpoint, romfs_open, (void *) romfs);
+    register_fs(mountpoint, romfs_open, romfs_list, (void *) romfs);
 }

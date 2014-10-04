@@ -4,7 +4,6 @@
 #include <string.h>
 #include "fio.h"
 #include "filesystem.h"
-
 #include "FreeRTOS.h"
 #include "task.h"
 #include "host.h"
@@ -59,8 +58,17 @@ int parse_command(char *str, char *argv[]){
 	return count;
 }
 
-void ls_command(int n, char *argv[]){
 
+void ls_command(int n, char *argv[]){
+	fio_printf(1, "\r\n");
+	char buf[1024];
+
+	if(n == 1)	fs_list(buf,"");
+	else	fs_list(buf,argv[1]);
+
+	
+	fio_printf(1, buf);
+	fio_printf(1, "\r\n");
 }
 
 int filedump(const char *filename){
