@@ -201,6 +201,7 @@ void fio_set_opaque(int fd, void * opaque) {
 #define stdout_hash 0x7FA08308
 #define stderr_hash 0x7FA058A3
 
+/*
 static int devfs_open(void * opaque, const char * path, int flags, int mode) {
     uint32_t h = hash_djb2((const uint8_t *) path, -1);
 //    DBGOUT("devfs_open(%p, \"%s\", %i, %i)\r\n", opaque, path, flags, mode);
@@ -228,3 +229,5 @@ void register_devfs() {
     DBGOUT("Registering devfs.\r\n");
     register_fs("dev", devfs_open, NULL);
 }
+*/
+
