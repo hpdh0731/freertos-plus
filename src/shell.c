@@ -153,14 +153,27 @@ void test_command(int n, char *argv[]) {
     int error;
 
     fio_printf(1, "\r\n");
-
+	
+	host_action(SYS_SYSTEM, "mkdir -p output");
+	host_action(SYS_SYSTEM, "rm -f output/syslog");
     handle = host_action(SYS_OPEN, "output/syslog", 8);
     if(handle == -1) {
         fio_printf(1, "Open file error!\n\r");
         return;
     }
 
-    char *buffer = "Test host_write function which can write data to output/syslog\n";
+    char buffer[1024];
+	strcpy(buffer,"\0");
+	int i;
+	int fib = 1;
+	int fib_last = 0;
+	for(i = 0; i < 15 ; i++)
+	{
+		sprintf(buffer,"%s %d\n",buffer,fib);
+		int tmp = fib;
+		fib = fib + fib_last;
+		fib_last = tmp;
+	}
     error = host_action(SYS_WRITE, handle, (void *)buffer, strlen(buffer));
     if(error != 0) {
         fio_printf(1, "Write file error! Remain %d bytes didn't write in the file.\n\r", error);
