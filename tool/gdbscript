@@ -1,6 +1,11 @@
 file build/main.elf
 target remote :3333
 
-b main
-
+b 99
+c
+set buf[0] = 't'
+set buf[1] = 'e'
+set buf[2] = 's'
+set buf[3] = 't'
+set buf[4] = '\0'
 c
