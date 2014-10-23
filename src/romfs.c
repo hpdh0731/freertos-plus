@@ -22,56 +22,65 @@ static uint32_t get_unaligned(const uint8_t * d) {
 
 void romfs_list(void * opaque, char * path, char * buf){
 	const uint8_t * meta = opaque;
-	int count = 0;
-	int dest = -1;
+	int layer = 0;
+	int dest = 0;
 	if(strlen(path) == 0 || (strlen(path) == 1 && path[0] == '/'))	{
 		dest = 1;
-		count = 0;
+		layer = 0;
 	}
 
 		while( 1 )
 		{
 			if(get_unaligned(meta) == 0)
-			{
-				count++;
-				
-				
-				if(dest >= 0)
+			{	
+				layer++;
+				if(dest == 1 && layer == 1)
 				{
 					strcat(buf,"(");
 					strncat(buf,meta+12, get_unaligned(meta+8));
 					strcat(buf,")\t");
 				}
-				else
+				else if(dest == 0)
 				{
-					path++;
+					while(path[0] == '/')	path++;
 					char *tmp = path;
-					while(path[0] != '\0' && path[0] != '/')	path++;
-					char name[32];
-					if(get_unaligned(meta+4) == hash_djb2(tmp,path-tmp))
+					while(tmp[0] != '\0' && tmp[0] != '/')	tmp++;
+					if(get_unaligned(meta+4) == hash_djb2(path,tmp-path))
+					{	
+						path = tmp;
+					}
+					while(path[0] == '/')	path++;
+					if(strlen(path) <= 1)
 					{
 						dest = 1;
-						count = 0;
+						layer = 0;
 					}
+					
 				}
 				meta += 12+get_unaligned(meta+8);
+
 			}
 			else if(get_unaligned(meta) == 1)
 			{
-
-				if(!get_unaligned(meta+8)) break;
-				if(dest > 0 && count == 0){
+				if(get_unaligned(meta+12) == 0) break;
+				if(dest == 1 && layer == 0){
 					strncat(buf,meta+16, get_unaligned(meta+12));
 					strcat(buf,"\t");
 				}
 				meta += get_unaligned(meta+12) + get_unaligned(meta+8) + 16;
+
 			}
 			else if(get_unaligned(meta) == 2){
 				meta += 4;
-				count--;
-				if(count < 0)	break;
+				layer--;
+				if(layer < 0)	break;
+
 			}
+			else break;
+
 		}
+		if(dest == 0)
+			strcpy(buf,"No such directory");
 
 }
 

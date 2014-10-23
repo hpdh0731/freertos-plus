@@ -52,31 +52,31 @@ void processdir(DIR * dirp, const char * curpath, FILE * outfile, const char * p
                 continue;
             strcat(fullpath, "/");
 
-			isFile = 0;
-			b = (isFile >>  0) & 0xff; fwrite(&b, 1, 1, outfile);
+	    isFile = 0;
+	    b = (isFile >>  0) & 0xff; fwrite(&b, 1, 1, outfile);
             b = (isFile >>  8) & 0xff; fwrite(&b, 1, 1, outfile);
             b = (isFile >> 16) & 0xff; fwrite(&b, 1, 1, outfile);
             b = (isFile >> 24) & 0xff; fwrite(&b, 1, 1, outfile);
 
-			hash = hash_djb2((const uint8_t *) ent->d_name, cur_hash);
-			b = (hash >>  0) & 0xff; fwrite(&b, 1, 1, outfile);
+	    hash = hash_djb2((const uint8_t *) ent->d_name, cur_hash);
+	    b = (hash >>  0) & 0xff; fwrite(&b, 1, 1, outfile);
             b = (hash >>  8) & 0xff; fwrite(&b, 1, 1, outfile);
             b = (hash >> 16) & 0xff; fwrite(&b, 1, 1, outfile);
             b = (hash >> 24) & 0xff; fwrite(&b, 1, 1, outfile);
 
-			uint32_t name_len = strlen(ent->d_name);
-			b = (name_len >>  0) & 0xff; fwrite(&b, 1, 1, outfile);
+	    uint32_t name_len = strlen(ent->d_name);
+	    b = (name_len >>  0) & 0xff; fwrite(&b, 1, 1, outfile);
             b = (name_len >>  8) & 0xff; fwrite(&b, 1, 1, outfile);
             b = (name_len >> 16) & 0xff; fwrite(&b, 1, 1, outfile);
             b = (name_len >> 24) & 0xff; fwrite(&b, 1, 1, outfile);
-			fwrite(ent->d_name, 1, name_len, outfile);
+	    fwrite(ent->d_name, 1, name_len, outfile);
 
             rec_dirp = opendir(fullpath);
             processdir(rec_dirp, fullpath + strlen(prefix) + 1, outfile, prefix);
             closedir(rec_dirp);
 			
-			isFile = 2;
-			b = (isFile >>  0) & 0xff; fwrite(&b, 1, 1, outfile);
+	    isFile = 2;
+	    b = (isFile >>  0) & 0xff; fwrite(&b, 1, 1, outfile);
             b = (isFile >>  8) & 0xff; fwrite(&b, 1, 1, outfile);
             b = (isFile >> 16) & 0xff; fwrite(&b, 1, 1, outfile);
             b = (isFile >> 24) & 0xff; fwrite(&b, 1, 1, outfile);
@@ -89,8 +89,8 @@ void processdir(DIR * dirp, const char * curpath, FILE * outfile, const char * p
                 exit(-1);
             }
 
-			isFile = 1;
-			b = (isFile >>  0) & 0xff; fwrite(&b, 1, 1, outfile);
+	    isFile = 1;
+	    b = (isFile >>  0) & 0xff; fwrite(&b, 1, 1, outfile);
             b = (isFile >>  8) & 0xff; fwrite(&b, 1, 1, outfile);
             b = (isFile >> 16) & 0xff; fwrite(&b, 1, 1, outfile);
             b = (isFile >> 24) & 0xff; fwrite(&b, 1, 1, outfile);
@@ -106,12 +106,13 @@ void processdir(DIR * dirp, const char * curpath, FILE * outfile, const char * p
             b = (size >>  8) & 0xff; fwrite(&b, 1, 1, outfile);
             b = (size >> 16) & 0xff; fwrite(&b, 1, 1, outfile);
             b = (size >> 24) & 0xff; fwrite(&b, 1, 1, outfile);
-			uint32_t name_len = strlen(ent->d_name);
-			b = (name_len >>  0) & 0xff; fwrite(&b, 1, 1, outfile);
+	    
+	    uint32_t name_len = strlen(ent->d_name);
+	    b = (name_len >>  0) & 0xff; fwrite(&b, 1, 1, outfile);
             b = (name_len >>  8) & 0xff; fwrite(&b, 1, 1, outfile);
             b = (name_len >> 16) & 0xff; fwrite(&b, 1, 1, outfile);
             b = (name_len >> 24) & 0xff; fwrite(&b, 1, 1, outfile);
-			fwrite(ent->d_name, 1, name_len, outfile);
+	    fwrite(ent->d_name, 1, name_len, outfile);
             while (size) {
                 w = size > 16 * 1024 ? 16 * 1024 : size;
                 fread(buf, 1, w, infile);
@@ -168,12 +169,14 @@ int main(int argc, char ** argv) {
     }
 
     processdir(dirp, "", outfile, dirname);
-			uint8_t b;
-			uint32_t isFile = 2;
-			b = (isFile >>  0) & 0xff; fwrite(&b, 1, 1, outfile);
-            b = (isFile >>  8) & 0xff; fwrite(&b, 1, 1, outfile);
-            b = (isFile >> 16) & 0xff; fwrite(&b, 1, 1, outfile);
-            b = (isFile >> 24) & 0xff; fwrite(&b, 1, 1, outfile);
+
+	uint32_t isFile = 2;
+	uint8_t b;
+	b = (isFile >>  0) & 0xff; fwrite(&b, 1, 1, outfile);
+    b = (isFile >>  8) & 0xff; fwrite(&b, 1, 1, outfile);
+    b = (isFile >> 16) & 0xff; fwrite(&b, 1, 1, outfile);
+    b = (isFile >> 24) & 0xff; fwrite(&b, 1, 1, outfile);
+
     fwrite(&z, 1, 8, outfile);
     if (outname)
         fclose(outfile);
