@@ -57,8 +57,8 @@ void processdir(DIR * dirp, const char * curpath, FILE * outfile, const char * p
             b = (isFile >>  8) & 0xff; fwrite(&b, 1, 1, outfile);
             b = (isFile >> 16) & 0xff; fwrite(&b, 1, 1, outfile);
             b = (isFile >> 24) & 0xff; fwrite(&b, 1, 1, outfile);
-
-	    hash = hash_djb2((const uint8_t *) ent->d_name, cur_hash);
+	    
+	    hash = hash_djb2( (const uint8_t *)ent->d_name, hash_init);
 	    b = (hash >>  0) & 0xff; fwrite(&b, 1, 1, outfile);
             b = (hash >>  8) & 0xff; fwrite(&b, 1, 1, outfile);
             b = (hash >> 16) & 0xff; fwrite(&b, 1, 1, outfile);

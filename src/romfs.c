@@ -24,64 +24,65 @@ void romfs_list(void * opaque, char * path, char * buf){
 	const uint8_t * meta = opaque;
 	int layer = 0;
 	int dest = 0;
+	char *path_head = path;
 	if(strlen(path) == 0 || (strlen(path) == 1 && path[0] == '/'))	{
 		dest = 1;
 		layer = 0;
 	}
 
-		while( 1 )
+	while( 1 )
+	{
+
+		if(get_unaligned(meta) == 0)
 		{
-			if(get_unaligned(meta) == 0)
-			{	
-				layer++;
-				if(dest == 1 && layer == 1)
-				{
-					strcat(buf,"(");
-					strncat(buf,meta+12, get_unaligned(meta+8));
-					strcat(buf,")\t");
-				}
-				else if(dest == 0)
-				{
-					while(path[0] == '/')	path++;
-					char *tmp = path;
-					while(tmp[0] != '\0' && tmp[0] != '/')	tmp++;
-					if(get_unaligned(meta+4) == hash_djb2(path,tmp-path))
-					{	
-						path = tmp;
-					}
-					while(path[0] == '/')	path++;
-					if(strlen(path) <= 1)
-					{
-						dest = 1;
-						layer = 0;
-					}
-					
-				}
-				meta += 12+get_unaligned(meta+8);
+			layer++;
 
-			}
-			else if(get_unaligned(meta) == 1)
+			if(dest == 1 && layer == 1)
 			{
-				if(get_unaligned(meta+12) == 0) break;
-				if(dest == 1 && layer == 0){
-					strncat(buf,meta+16, get_unaligned(meta+12));
-					strcat(buf,"\t");
+				strcat(buf,"(");
+				strncat(buf,meta+12, get_unaligned(meta+8));
+				strcat(buf,")\t");
+			}
+			else if(dest == 0 && layer == 1)
+			{
+				while(path[0] == '/')	path++;
+				char *tmp = path;
+				while(tmp[0] != '\0' && tmp[0] != '/')	tmp++;
+
+				if(get_unaligned(meta+4) == hash_djb2(path,tmp-path))
+				{
+					path = tmp;
+					layer = 0;
 				}
-				meta += get_unaligned(meta+12) + get_unaligned(meta+8) + 16;
-
+				while(path[0] == '/')	path++;
+				if(strlen(path) == 0)	dest = 1;
 			}
-			else if(get_unaligned(meta) == 2){
-				meta += 4;
-				layer--;
-				if(layer < 0)	break;
 
-			}
-			else break;
-
+			meta += 12+get_unaligned(meta+8);		
 		}
-		if(dest == 0)
-			strcpy(buf,"No such directory");
+		else if(get_unaligned(meta) == 1)
+		{
+			if(get_unaligned(meta+12) == 0) break;
 
+			if(dest == 1 && layer == 0)
+			{
+				strncat(buf,meta+16, get_unaligned(meta+12));
+				strcat(buf,"\t");
+			}
+
+			meta += get_unaligned(meta+12) + get_unaligned(meta+8) + 16;
+		}
+		else if(get_unaligned(meta) == 2)
+		{
+			meta += 4;
+			layer--;
+			if(layer < 0)	break;
+		}
+		else break;
+
+	}
+
+	//if(dest == 0)	strcpy(buf,"No such directory");
 }
 
 
